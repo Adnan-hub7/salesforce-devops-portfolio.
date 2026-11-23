@@ -1,0 +1,28 @@
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - checkout: self
+    persistCredentials: true
+
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '20.x'
+    displayName: 'Use Node.js'
+
+  - script: |
+      npm install --global @salesforce/cli
+      sf --version
+    displayName: 'Install Salesforce CLI'
+
+  - script: |
+      sf project deploy validate --manifest manifest/package.xml --target-org $(SF_TARGET_ORG) --test-level RunLocalTests --wait 60
+    displayName: 'Validate Salesforce deployment'
+    env:
+      SF_TARGET_ORG: $(SF_TARGET_ORG)
